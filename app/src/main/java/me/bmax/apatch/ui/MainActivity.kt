@@ -49,6 +49,9 @@ import me.bmax.apatch.APApplication
 import me.bmax.apatch.ui.screen.BottomBarDestination
 import me.bmax.apatch.ui.theme.APatchTheme
 import me.bmax.apatch.ui.theme.APatchThemeWithBackground
+import me.bmax.apatch.ui.theme.BackgroundConfig
+import androidx.compose.material3.NavigationBarDefaults
+import androidx.compose.material3.MaterialTheme
 import me.bmax.apatch.util.PermissionRequestHandler
 import me.bmax.apatch.util.PermissionUtils
 import me.bmax.apatch.util.ui.LocalSnackbarHost
@@ -186,7 +189,14 @@ private fun BottomBar(navController: NavHostController) {
         val kPatchReady = state != APApplication.State.UNKNOWN_STATE
         val aPatchReady = state == APApplication.State.ANDROIDPATCH_INSTALLED
 
-        NavigationBar(tonalElevation = 8.dp) {
+        NavigationBar(
+            tonalElevation = 8.dp,
+            containerColor = if (BackgroundConfig.isCustomBackgroundEnabled) {
+                MaterialTheme.colorScheme.surface
+            } else {
+                NavigationBarDefaults.containerColor
+            }
+        ) {
             BottomBarDestination.entries.forEach { destination ->
                 val isCurrentDestOnBackStack by navController.isRouteOnBackStackAsState(destination.direction)
 
