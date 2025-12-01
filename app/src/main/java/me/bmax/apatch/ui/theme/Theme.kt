@@ -182,25 +182,25 @@ fun APatchTheme(
     }
     
     val colorScheme = baseColorScheme.copy(
-        background = if (BackgroundConfig.isCustomBackgroundEnabled && !isSettingsScreen) Color.Transparent else baseColorScheme.background,
-        surface = if (BackgroundConfig.isCustomBackgroundEnabled && !isSettingsScreen) {
+        background = if (BackgroundConfig.isCustomBackgroundEnabled) Color.Transparent else baseColorScheme.background,
+        surface = if (BackgroundConfig.isCustomBackgroundEnabled) {
             // 在自定义背景模式下，为surface添加半透明效果
             baseColorScheme.surface.copy(alpha = 0.75f)
         } else {
             baseColorScheme.surface
         },
         // 同样处理primary和secondary颜色，确保KStatusCard也有半透明效果
-        primary = if (BackgroundConfig.isCustomBackgroundEnabled && !isSettingsScreen) {
+        primary = if (BackgroundConfig.isCustomBackgroundEnabled) {
             baseColorScheme.primary.copy(alpha = 0.75f)
         } else {
             baseColorScheme.primary
         },
-        secondary = if (BackgroundConfig.isCustomBackgroundEnabled && !isSettingsScreen) {
+        secondary = if (BackgroundConfig.isCustomBackgroundEnabled) {
             baseColorScheme.secondary.copy(alpha = 0.75f)
         } else {
             baseColorScheme.secondary
         },
-        secondaryContainer = if (BackgroundConfig.isCustomBackgroundEnabled && !isSettingsScreen) {
+        secondaryContainer = if (BackgroundConfig.isCustomBackgroundEnabled) {
             baseColorScheme.secondaryContainer.copy(alpha = 0.75f)
         } else {
             baseColorScheme.secondaryContainer
@@ -240,11 +240,10 @@ fun APatchThemeWithBackground(
     
     APatchTheme(isSettingsScreen = isSettingsScreen) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // 只有不在设置页面时才显示背景层
-            if (!isSettingsScreen) {
-                BackgroundLayer()
-            }
-            // 内容层 - 添加zIndex确保在背景之上
+            // Always show background layer if enabled
+            BackgroundLayer()
+            
+            // Content layer - add zIndex to ensure it's above the background
             Box(modifier = Modifier.fillMaxSize().zIndex(1f)) {
                 content()
             }
@@ -299,22 +298,5 @@ fun BackgroundLayer() {
                 .zIndex(-1f)
                 .paint(painter = painter, contentScale = ContentScale.Crop)
         )
-        
-        // 只在暗色模式下添加半透明遮罩层，白天模式下不添加
-        if (darkTheme) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .zIndex(-1f)
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Black.copy(alpha = 0.4f),
-                                Color.Black.copy(alpha = 0.2f)
-                            )
-                        )
-                    )
-            )
-        }
     }
 }

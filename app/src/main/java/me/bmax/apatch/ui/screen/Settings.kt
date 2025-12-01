@@ -71,6 +71,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringArrayResource
@@ -155,6 +156,11 @@ fun SettingScreen() {
             TopAppBar(
                 title = { Text(stringResource(R.string.settings)) },
             )
+        },
+        containerColor = if (BackgroundConfig.isCustomBackgroundEnabled) {
+            Color.Transparent
+        } else {
+            MaterialTheme.colorScheme.background
         },
         snackbarHost = { SnackbarHost(snackBarHost) }
     ) { paddingValues ->
