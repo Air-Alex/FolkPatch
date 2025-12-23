@@ -68,6 +68,7 @@ import kotlinx.coroutines.launch
 import me.yuki.folk.APApplication
 import me.yuki.folk.Natives
 import me.yuki.folk.R
+import me.yuki.folk.apApp
 import me.yuki.folk.ui.component.ProvideMenuShape
 import me.yuki.folk.ui.component.SearchAppBar
 import me.yuki.folk.ui.component.SwitchItem
@@ -175,7 +176,7 @@ fun SuperUserScreen() {
             isRefreshing = viewModel.isRefreshing
         ) {
             LazyColumn(Modifier.fillMaxSize()) {
-                items(viewModel.appList, key = { it.packageName + it.uid }) { app ->
+                items(viewModel.appList.filter { it.packageName != apApp.packageName }, key = { it.packageName + it.uid }) { app ->
                     AppItem(app)
                 }
             }

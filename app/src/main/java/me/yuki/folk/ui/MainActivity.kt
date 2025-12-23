@@ -59,6 +59,7 @@ import me.yuki.folk.APApplication
 import me.yuki.folk.ui.screen.BottomBarDestination
 import me.yuki.folk.ui.screen.MODULE_TYPE
 import me.yuki.folk.ui.theme.APatchTheme
+import me.yuki.folk.ui.viewmodel.SuperUserViewModel
 import me.yuki.folk.ui.theme.APatchThemeWithBackground
 import me.yuki.folk.ui.theme.BackgroundConfig
 import androidx.compose.material3.NavigationBarDefaults
@@ -227,6 +228,12 @@ class MainActivity : AppCompatActivity() {
             val snackBarHostState = remember { SnackbarHostState() }
             val bottomBarRoutes = remember {
                 BottomBarDestination.entries.map { it.direction.route }.toSet()
+            }
+
+            LaunchedEffect(Unit) {
+                if (SuperUserViewModel.apps.isEmpty()) {
+                    SuperUserViewModel().fetchAppList()
+                }
             }
             
             val uri = installUri
