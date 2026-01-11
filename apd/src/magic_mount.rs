@@ -127,6 +127,36 @@ impl Node {
     }
 }
 
+/// Check if a partition should be mounted based on its configuration
+/// Returns true if the partition exists and can be mounted
+fn should_mount_partition(partition: &str) -> bool {
+    let path_of_root = Path::new("/").join(partition);
+    let path_of_system = Path::new("/system").join(partition);
+
+    // Partition must exist as a directory
+    if !path_of_root.is_dir() {
+        log::debug!("partition /{partition} does not exist or is not a directory");
+        return false;
+    }
+
+    // Special handling for system partition - always mount if exists
+    if partition == "system" {
+        return true;
+    }
+
+    // For other partitions, check if they are symlinks to /system/xxx
+    // If they are symlinks, we skip them (they're already part of system)
+    if path_of_system.is_symlink() {
+        log::debug!(
+            "partition /{partition} is a symlink to /system/{partition}, skipping separate mount"
+        );
+        return false;
+    }
+
+    // If partition exists at root and is not a symlink through /system, it can be mounted
+    true
+}
+
 fn collect_module_files() -> Result<Option<Node>> {
     let mut root = Node::new_root("");
     let mut system = Node::new_root("system");
@@ -154,23 +184,34 @@ fn collect_module_files() -> Result<Option<Node>> {
     }
 
     if has_file {
-        for (partition, require_symlink) in [
-            ("vendor", true),
-            ("system_ext", true),
-            ("product", true),
-            ("odm", false),
-            ("oem", false),
-        ] {
-            let path_of_root = Path::new("/").join(partition);
-            let path_of_system = Path::new("/system").join(partition);
-            if path_of_root.is_dir() && (!require_symlink || path_of_system.is_symlink()) {
+        // Support all common partitions including system
+        // First, extract partition nodes from system children before moving system
+        let partitions = [
+            "vendor",
+            "system_ext",
+            "product",
+            "odm",
+            "oem",
+            "my_product",
+            "my_preload",
+        ];
+
+        // Move partition nodes from system to root before system is moved
+        for partition in partitions {
+            if should_mount_partition(partition) {
                 let name = partition.to_string();
                 if let Some(node) = system.children.remove(&name) {
                     root.children.insert(name, node);
+                    log::debug!("partition /{partition} will be mounted separately");
                 }
             }
         }
-        root.children.insert("system".to_string(), system);
+
+        // Now insert system partition
+        if should_mount_partition("system") {
+            root.children.insert("system".to_string(), system);
+        }
+
         Ok(Some(root))
     } else {
         Ok(None)
